@@ -21,5 +21,5 @@ jobs:
 #Build the docker image and push it to dockerhub
     - name: Build the Docker image
       run: docker build -t meryemmetav/react-app .
-    - name: Push to Dockerhub
+    - name: Push to Dockerhub 
       run: docker push meryemmetav/react-app:latest
