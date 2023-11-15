@@ -1,0 +1,25 @@
+name: CI pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+#Steps of the workflow
+    steps:
+    - uses: actions/checkout@v3
+#Adding credentials of docker hub as secret variables in github
+    - name: Login Dockerhub
+      env:
+        DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#Build the docker image and push it to dockerhub
+    - name: Build the Docker image
+      run: docker build -t meryemmetav/react-app .
+    - name: Push to Dockerhub
+      run: docker push meryemmetav/react-app:latest
