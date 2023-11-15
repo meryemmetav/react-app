@@ -17,7 +17,7 @@ jobs:
       env:
         DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-      run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD --password-stdin
+      run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 #Build the docker image and push it to dockerhub
     - name: Build the Docker image
       run: docker build -t meryemmetav/react-app .
