@@ -1,25 +1,45 @@
-name: CI pipeline
+name: Deploy to production
 
 on:
-  push:
-    branches: [ "main" ]
+ push:
+  branches: [ main ]
 
 jobs:
 
-  build:
+ deploy:
+  name: Build image
+  runs-on: ubuntu-latest
 
-    runs-on: ubuntu-latest
-#Steps of the workflow
-    steps:
-    - uses: actions/checkout@v3
-#Adding credentials of docker hub as secret variables in github
-    - name: Login Dockerhub
-      env:
-        DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
-        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-      run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-#Build the docker image and push it to dockerhub
-    - name: Build the Docker image 
-      run: docker build -t meryemmetav/react-app .
-    - name: Push to Dockerhub 
-      run: docker push meryemmetav/react-app:latest
+  steps:
+  - name: Check out code
+    uses: actions/checkout@v2
+
+  - name: Configure AWS credentials
+    uses: aws-actions/configure-aws-credentials@v1
+    with:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-region: us-east-1
+
+  - name: Login to Amazon ECR
+    id: login-ecr
+    uses: aws-actions/amazon-ecr-login@v1
+
+  - name: Load secrets and save to app.env
+    run: aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env
+
+  - name: Delete existing latest image
+    run: |
+      docker image ls -f reference=accountID.dkr.ecr.region.amazonaws.com/react-app-repository:latest | while read image; do docker rmi $image; done
+      
+  - name: Build, tag, and push image to Amazon ECR
+    env:
+      ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      ECR_REPOSITORY: dockrrepo
+      IMAGE_TAG: ${{ github.sha }}
+    run: |
+      docker image ls -f reference=accountID.dkr.ecr.region.amazonaws.com/react-app-repository:latest | while read image; do docker rmi $image; done
+      docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+      docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
+
+  #1
