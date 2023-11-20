@@ -26,11 +26,12 @@ jobs:
     uses: aws-actions/amazon-ecr-login@v1
 
   - name: Load secrets and save to app.env
-    run: aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env
+    run: |
+      aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > app.env
 
   - name: Delete existing latest image
     run: |
-      docker image ls -f reference=accountID.dkr.ecr.region.amazonaws.com/dockerrepo-repository:latest | while read image; do docker rmi $image; done
+      docker image ls -f reference=accountid.dkr.ecr.region.amazonaws.com/dockerrepo:latest | while read image; do docker rmi $image; done
       
   - name: Build, tag, and push image to Amazon ECR
     env:
