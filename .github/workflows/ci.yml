@@ -25,10 +25,17 @@ jobs:
     id: login-ecr
     uses: aws-actions/amazon-ecr-login@v1
 
-  - name: Delete the old version of the image
+  - name: Get the list of image digest(s) for the repository
+    id: get-image-digest
     run: |
-      docker rmi $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG || true
-      
+      OLD_IMAGE_DIGEST=$(aws ecr list-images --repository-name $ECR_REPOSITORY --filter tagStatus=TAGGED --query 'imageIds[*].imageDigest' --output json)
+      echo "::set-output name=OLD_IMAGE_DIGEST::$OLD_IMAGE_DIGEST"
+
+  - name: Delete all existing images in the repository
+    if: steps.get-image-digest.outputs.OLD_IMAGE_DIGEST != '[]'
+    run: |
+      aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids $(echo $OLD_IMAGE_DIGEST | tr -d '[]" ')
+
   - name: Build, tag, and push image to Amazon ECR
     env:
       ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
