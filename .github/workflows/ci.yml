@@ -32,7 +32,6 @@ jobs:
       ECR_REPOSITORY: dockrrepo
       IMAGE_TAG: ${{ github.sha }}
     run: |
-      docker image ls -f reference=accountID.dkr.ecr.region.amazonaws.com/react-app-repository:latest | while read image; do docker rmi $image; done
-      docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-      docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
+      docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+      docker push -a $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
