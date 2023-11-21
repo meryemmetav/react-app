@@ -25,12 +25,12 @@ jobs:
     id: login-ecr
     uses: aws-actions/amazon-ecr-login@v1
 
-  - name: Delete the latest version of the image
+  - name: Delete existing image in the repository
     run: |
-      aws ecr batch-delete-image --repository-name dockrrepo --image-ids imageTag=latest || true
-  
-  
-  
+      OLD_IMAGE_DIGEST=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query 'imageDetails[?imageTags[0]==`latest`].imageDigest' --output json)
+      if [ "$OLD_IMAGE_DIGEST" != "null" ]; then
+        aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageDigest=$OLD_IMAGE_DIGEST
+      fi
 
   - name: Build, tag, and push image to Amazon ECR
     env:
