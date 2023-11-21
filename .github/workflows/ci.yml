@@ -27,7 +27,8 @@ jobs:
 
   - name: Delete the latest version of the image
     run: |
-      aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageTag=latest || true
+      aws ecr batch-delete-image --repository-name dockrrepo --image-ids imageTag=latest || true
+  
   
   
 
