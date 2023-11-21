@@ -27,7 +27,7 @@ jobs:
 
   - name: Delete existing image in the repository
     run: |
-      OLD_IMAGE_DIGEST=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query 'imageDetails[?imageTags[0]==`latest`].imageDigest' --output json)
+      OLD_IMAGE_DIGEST=$(aws ecr describe-images --repository-name dockrrepo --query 'imageDetails[?imageTags[0]==`latest`].imageDigest' --output json)
       if [ "$OLD_IMAGE_DIGEST" != "null" ]; then
         aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageDigest=$OLD_IMAGE_DIGEST
       fi
