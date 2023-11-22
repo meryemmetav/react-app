@@ -35,8 +35,13 @@ jobs:
       - name: Delete the image with the "latest" tag
         if: steps.get-latest-image.outputs.IMAGE_DIGEST
         run: |
-          aws ecr batch-delete-image --repository-name dockerrepo --image-ids $(echo ${{ steps.get-latest-image.outputs.IMAGE_DIGEST }} | jq -r '.[]')
- 
+          IMAGE_DIGESTS=$(echo ${{ steps.get-latest-image.outputs.IMAGE_DIGEST }} | jq -r '.[]')
+          if [ -n "$IMAGE_DIGESTS" ]; then
+            aws ecr batch-delete-image --repository-name dockerrepo --image-ids $IMAGE_DIGESTS
+          else
+            echo "No images found with the 'latest' tag to delete."
+          fi
+
       - name: Build, tag, and push image to Amazon ECR with "latest" tag
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
