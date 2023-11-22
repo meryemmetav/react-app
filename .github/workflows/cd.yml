@@ -25,17 +25,8 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Debug kubeconfig
-        run: cat ${{ github.workspace }}/kubeconfig.yaml
-
       - name: Debug kubectl config
         run: kubectl config view
-
-      - name: Configure kubectl
-        uses: azure/k8s-set-context@v1
-        with:
-          kubeconfig: ${{ github.workspace }}/kubeconfig.yaml  
-          context: myocluster 
 
       - name: Deploy to EKS
         env:
@@ -43,6 +34,6 @@ jobs:
           ECR_REPOSITORY: dockerrepo
           IMAGE_TAG: latest
         run: |
-          kubectl config use-context --kubeconfig=${{ github.workspace }}/kubeconfig.yaml myocluster
+          kubectl config use-context myocluster --kubeconfig=${{ github.workspace }}/kubeconfig.yaml
           kubectl apply -f kubernetes/deployment.yml
           kubectl apply -f kubernetes/service.yml
