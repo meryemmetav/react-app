@@ -34,6 +34,7 @@ jobs:
           ECR_REPOSITORY: dockerrepo
           IMAGE_TAG: latest
         run: |
-          kubectl config use-context myocluster.us-east-1.eksctl.io --kubeconfig=${{ github.workspace }}/kubeconfig.yaml
+          kubectl config use-context arn:aws:eks:us-east-1:157931892911:cluster/myocluster --kubeconfig=${{ github.workspace }}/kubeconfig.yaml
           kubectl apply -f kubernetes/deployment.yml
           kubectl apply -f kubernetes/service.yml
+      
