@@ -28,7 +28,7 @@ jobs:
       - name: Delete the image with the "latest" tag
         run: |
             TAG_TO_DELETE="latest"
-            IMAGES=$(aws ecr describe-images --repository-name dockerrepo --query "imageDetails[?imageTags=='$TAG_TO_DELETE'].imageDigest" --output json)
+            IMAGES=$(aws ecr describe-images --repository-name dockerrepo --query "imageDetails[?contains(imageTags, '$TAG_TO_DELETE')].imageDigest" --output json)
             if [ "$IMAGES" != "[]" ]; then
                 IMAGE_IDS=$(echo $IMAGES | jq -r '.[].imageDigest')
                 aws ecr batch-delete-image --repository-name dockerrepo --image-ids $IMAGE_IDS
