@@ -2,13 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: react-app
+  labels:
+    app: react-app
 spec:
-  replicas: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-app
   template:
     metadata:
       labels:
         app: react-app
     spec:
       containers:
-      - name: react-app-container
-        image: your-ecr-registry/dockerrepo:${{ github.sha }}
+        - name: react-app
+          image: 157931892911.dkr.ecr.us-east-1.amazonaws.com/dockerrepo:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000 # Should match the port your React app is running on
