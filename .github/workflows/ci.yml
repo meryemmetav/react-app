@@ -23,18 +23,9 @@ jobs:
           id: login-ecr
           uses: aws-actions/amazon-ecr-login@v1
   
-        - name: Get the list of image IDs in the repository
-          id: describe-images
+        - name: Delete all existing images in the repository
           run: |
-            IMAGES=$(aws ecr describe-images --repository-name dockerrepo --query 'imageDetails[*].imageDigest' --output json)
-            echo "::set-output name=IMAGES::$IMAGES"
-  
-        - name: Delete the existing image
-          if: steps.describe-images.outputs.IMAGES != '[]'
-          run: |
-            for imageId in $(echo ${{ steps.describe-images.outputs.IMAGES }} | jq -r '.[]'); do
-              aws ecr batch-delete-image --repository-name dockerrepo --image-ids imageDigest=$imageId
-            done
+            aws ecr batch-delete-image --repository-name dockerrepo --image-ids $(aws ecr list-images --repository-name dockerrepo --query 'imageIds[*]' --output json)
   
         - name: Build, tag, and push image to Amazon ECR
           env:
