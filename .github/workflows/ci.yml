@@ -25,16 +25,17 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Delete the image with the "latest" tag
+      - name: Get the image digest for the "latest" tag
+        id: get-latest-image
         run: |
-            TAG_TO_DELETE="latest"
-            IMAGES=$(aws ecr describe-images --repository-name dockerrepo --query "imageDetails[?contains(imageTags, '$TAG_TO_DELETE')].imageDigest" --output json)
-            if [ "$IMAGES" != "[]" ]; then
-                IMAGE_IDS=$(echo $IMAGES | jq -r '.[].imageDigest')
-                aws ecr batch-delete-image --repository-name dockerrepo --image-ids $IMAGE_IDS
-            else
-                echo "No images found with the tag: $TAG_TO_DELETE"
-            fi
+          TAG_TO_DELETE="latest"
+          IMAGES=$(aws ecr describe-images --repository-name dockerrepo --query "imageDetails[?contains(imageTags, '$TAG_TO_DELETE')].[imageDigest]" --output json)
+          echo "::set-output name=IMAGE_DIGEST::${IMAGES:-}"
+
+      - name: Delete the image with the "latest" tag
+        if: steps.get-latest-image.outputs.IMAGE_DIGEST
+        run: |
+          aws ecr batch-delete-image --repository-name dockerrepo --image-ids $(echo ${{ steps.get-latest-image.outputs.IMAGE_DIGEST }} | jq -r '.[]')
  
       - name: Build, tag, and push image to Amazon ECR with "latest" tag
         env:
