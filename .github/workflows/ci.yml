@@ -1,4 +1,4 @@
-name: Build and push to Ecr
+name: Build and push to Ecr / deploy to eks
 
 on:
   push:
@@ -36,4 +36,4 @@ jobs:
         run: aws eks --region us-east-1 update-kubeconfig --name myocluster
 
       - name: Deploy To Eks
-        run: kubectl apply -f Kubernetes/deployement.yml -f Kubernetes/service.yml
+        run: kubectl apply -f kubernetes/deployement.yml -f kubernetes/service.yml
