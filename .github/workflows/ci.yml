@@ -34,7 +34,7 @@ jobs:
           else
             echo "No images found with the tag: $TAG_TO_DELETE"
           fi
-
+ 
       - name: Build, tag, and push image to Amazon ECR with "latest" tag
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
